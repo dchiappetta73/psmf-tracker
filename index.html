@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PSMF Plus Tracker with Refeeds</title>
+<meta name="theme-color" content="#38bdf8">
+<meta name="description" content="PSMF Plus Tracker with RFLH Refeed Integration">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🔥</text></svg>">
+<title>PSMF Plus Tracker</title>
 <style>
 :root {
   --color-bg-primary: #0f172a;
@@ -400,13 +404,14 @@ li {
   <p class="subtitle">Optimized Protocol with RFLH Refeed Integration | March 5 - March 31, 2026</p>
 
   <div class="tabs">
-    <button class="tab active" onclick="showTab('overview')">📊 Overview</button>
-    <button class="tab" onclick="showTab('calendar')">📅 Calendar & Refeeds</button>
-    <button class="tab" onclick="showTab('diet')">🍽️ Diet Tracker</button>
-    <button class="tab" onclick="showTab('weight')">⚖️ Weight Log</button>
-    <button class="tab" onclick="showTab('workouts')">💪 Workouts</button>
-    <button class="tab" onclick="showTab('supplements')">💊 Supplements</button>
-    <button class="tab" onclick="showTab('protocol')">📋 Protocol</button>
+    <button class="tab active" onclick="showTab('overview', this)">📊 Overview</button>
+    <button class="tab" onclick="showTab('calendar', this)">📅 Calendar & Refeeds</button>
+    <button class="tab" onclick="showTab('diet', this)">🍽️ Diet Tracker</button>
+    <button class="tab" onclick="showTab('weight', this)">🧮 Weight Log</button>
+    <button class="tab" onclick="showTab('workouts', this)">💪 Strength Training</button>
+    <button class="tab" onclick="showTab('cardio', this)">🏃 Cardio</button>
+    <button class="tab" onclick="showTab('supplements', this)">💊 Supplements</button>
+    <button class="tab" onclick="showTab('protocol', this)">📋 Protocol</button>
   </div>
 
   <!-- OVERVIEW TAB -->
@@ -708,10 +713,10 @@ li {
     </div>
   </div>
 
-  <!-- WORKOUTS TAB -->
+  <!-- STRENGTH TRAINING TAB -->
   <div id="workouts" class="tab-content">
     <div class="card">
-      <h2>Training Schedule (3x/Week)</h2>
+      <h2>Strength Training Schedule (3x/Week)</h2>
       <div class="alert alert-warning">
         <strong>⚡ Optimized for Muscle Preservation on PSMF</strong><br>
         Heavy compound lifts (5-8 reps), minimal volume, maximum intensity. Goal: maintain strength = maintain muscle.
@@ -747,15 +752,15 @@ li {
     </div>
 
     <div class="card">
-      <h2>Workout Log</h2>
+      <h2>Strength Workout Log</h2>
       <div class="form-group">
         <label>Date</label>
-        <input type="date" id="workoutDate" value="2026-03-08">
+        <input type="date" id="workoutDate" value="2026-03-08" onchange="loadWorkoutTemplate()">
       </div>
 
       <div class="form-group">
         <label>Workout Type</label>
-        <select id="workoutType">
+        <select id="workoutType" onchange="loadWorkoutTemplate()">
           <option value="Day A">Day A - Lower Body</option>
           <option value="Day B">Day B - Upper Body</option>
           <option value="Day C">Day C - Full Body</option>
@@ -763,12 +768,106 @@ li {
         </select>
       </div>
 
+      <div id="exerciseLog"></div>
+
       <div class="form-group">
-        <label>Notes</label>
-        <textarea id="workoutNotes" rows="3" placeholder="Exercises completed, weights used, how you felt..."></textarea>
+        <label>Overall Notes</label>
+        <textarea id="workoutNotes" rows="2" placeholder="How you felt, energy level, etc..."></textarea>
       </div>
 
-      <button onclick="saveWorkout()" style="width: 100%;">Save Workout</button>
+      <button onclick="saveWorkout()" style="width: 100%; margin-top: 16px;">Save Workout</button>
+    </div>
+
+    <div class="card">
+      <h2>Strength Workout History</h2>
+      <div class="form-group">
+        <label>Quick Log Workout</label>
+        <select id="historyFilter" onchange="showWorkoutTracker()">
+          <option value="">Select to log workout...</option>
+          <option value="Day A">Day A - Lower Body</option>
+          <option value="Day B">Day B - Upper Body</option>
+          <option value="Day C">Day C - Full Body</option>
+          <option value="Mobility">Mobility Only</option>
+        </select>
+      </div>
+      
+      <div id="workoutTrackerContainer" style="display: none; margin-top: 20px;"></div>
+      
+      <div style="margin-top: 30px;">
+        <h3 style="color: var(--color-accent); margin-bottom: 16px;">Past Workouts</h3>
+        <div id="workoutHistoryContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDIO TAB -->
+  <div id="cardio" class="tab-content">
+    <div class="card">
+      <h2>Cardio Protocol (Category 2)</h2>
+      <div class="alert alert-warning">
+        <strong>⚡ Optional Cardio Guidelines</strong><br>
+        2-4 sessions per week. Low-moderate intensity. Muscle preservation is priority - avoid overdoing it!
+      </div>
+
+      <ul>
+        <li><span class="highlight">Frequency:</span> 2-4 sessions per week (NOT daily)</li>
+        <li><span class="highlight">Duration:</span> 20-30 minutes per session</li>
+        <li><span class="highlight">Intensity:</span> Low-moderate (60-70% max heart rate, ~120-140 bpm)</li>
+        <li><span class="highlight">Timing:</span> Post-workout or separate session, fasted AM optional</li>
+        <li><span class="highlight">Types:</span> Brisk walking (incline preferred), cycling, elliptical, rowing</li>
+        <li><span class="highlight">Purpose:</span> Modest calorie burn without compromising recovery</li>
+        <li><span class="highlight">Warning:</span> Avoid HIIT or intense cardio - muscle preservation is priority</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Log Cardio Session</h2>
+      
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="cardioDate" value="2026-03-08">
+      </div>
+
+      <div class="form-group">
+        <label>Duration (minutes)</label>
+        <input type="number" id="cardio_duration_main" placeholder="20-30">
+      </div>
+
+      <div class="form-group">
+        <label>Type</label>
+        <select id="cardio_type_main" style="background: var(--color-bg-tertiary);">
+          <option value="">Select cardio type...</option>
+          <option value="Walking (Flat)">Walking (Flat)</option>
+          <option value="Walking (Incline)">Walking (Incline)</option>
+          <option value="Cycling">Cycling</option>
+          <option value="Elliptical">Elliptical</option>
+          <option value="Rowing">Rowing</option>
+          <option value="Stairmaster">Stairmaster</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Average Heart Rate (bpm) - Optional</label>
+        <input type="number" id="cardio_hr_main" placeholder="120-140">
+      </div>
+
+      <div class="form-group">
+        <label>Calories Burned - Optional</label>
+        <input type="number" id="cardio_cal_main" placeholder="150-300">
+      </div>
+
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="cardioNotes" rows="2" placeholder="How you felt, energy level, etc..."></textarea>
+      </div>
+
+      <button onclick="saveCardioSession()" style="width: 100%;">Save Cardio Session</button>
+    </div>
+
+    <div class="card">
+      <h2>Cardio History</h2>
+      <div id="cardioHistoryContainer"></div>
     </div>
   </div>
 
@@ -890,13 +989,22 @@ li {
 </div>
 
 <script>
-// Data storage
-let dietEntries = [];
-let weightEntries = [
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('Service Worker registered'))
+      .catch(err => console.log('Service Worker registration failed'));
+  });
+}
+
+// Data storage with localStorage persistence
+let dietEntries = JSON.parse(localStorage.getItem('dietEntries')) || [];
+let weightEntries = JSON.parse(localStorage.getItem('weightEntries')) || [
   {date: '2026-03-05', day: 1, weight: 174.0, change: 0, notes: 'Starting weight'},
   {date: '2026-03-08', day: 4, weight: 172.8, change: -1.2, notes: ''}
 ];
-let workoutEntries = [];
+let workoutEntries = JSON.parse(localStorage.getItem('workoutEntries')) || [];
 
 // Refeed days (1-indexed day numbers)
 const refeedDays = {
@@ -912,18 +1020,21 @@ window.onload = function() {
   generateCalendar();
   updateDayTypeIndicator();
   loadDietHistory();
+  loadWorkoutHistory();
+  loadCardioHistory();
   calculateDailyMacros();
+  loadWorkoutTemplate();
 };
 
 // Tab navigation
-function showTab(tabName) {
+function showTab(tabName, clickedTab) {
   const tabs = document.querySelectorAll('.tab');
   const contents = document.querySelectorAll('.tab-content');
   
   tabs.forEach(tab => tab.classList.remove('active'));
   contents.forEach(content => content.classList.remove('active'));
   
-  event.target.classList.add('active');
+  clickedTab.classList.add('active');
   document.getElementById(tabName).classList.add('active');
 }
 
@@ -1078,6 +1189,9 @@ function saveDietEntry() {
   dietEntries.push(entry);
   dietEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
   
+  // Save to localStorage
+  localStorage.setItem('dietEntries', JSON.stringify(dietEntries));
+  
   loadDietHistory();
   alert('Diet entry saved!');
 }
@@ -1137,6 +1251,9 @@ function saveWeight() {
   weightEntries.push(entry);
   weightEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
   
+  // Save to localStorage
+  localStorage.setItem('weightEntries', JSON.stringify(weightEntries));
+  
   // Update display
   const tbody = document.getElementById('weightHistoryBody');
   tbody.innerHTML = weightEntries.map(entry => `
@@ -1162,20 +1279,428 @@ function saveWeight() {
   updateOverview();
 }
 
+// Workout templates
+const workoutTemplates = {
+  'Day A': [
+    { name: 'Squat or Leg Press', sets: 3, targetReps: '5-8' },
+    { name: 'Romanian Deadlift', sets: 3, targetReps: '6-8' },
+    { name: 'Leg Curl', sets: 2, targetReps: '8-10' },
+    { name: 'Calf Raise', sets: 3, targetReps: '12-15' }
+  ],
+  'Day B': [
+    { name: 'Bench Press or DB Press', sets: 3, targetReps: '5-8' },
+    { name: 'Bent-Over Row or Cable Row', sets: 3, targetReps: '6-8' },
+    { name: 'Overhead Press', sets: 3, targetReps: '6-8' },
+    { name: 'Pull-ups or Lat Pulldown', sets: 2, targetReps: '6-10' }
+  ],
+  'Day C': [
+    { name: 'Deadlift', sets: 3, targetReps: '5' },
+    { name: 'Incline Press', sets: 3, targetReps: '6-8' },
+    { name: 'Bulgarian Split Squat', sets: 3, targetReps: '8-10/leg' },
+    { name: 'Face Pulls', sets: 2, targetReps: '12-15' }
+  ],
+  'Cardio': [
+    { name: 'Duration (minutes)', value: '' },
+    { name: 'Type', value: '' },
+    { name: 'Avg Heart Rate (bpm)', value: '' },
+    { name: 'Calories Burned', value: '' }
+  ],
+  'Mobility': [
+    { name: 'Hip Internal Rotation Stretch', checked: false },
+    { name: 'Hip External Rotation Stretch', checked: false },
+    { name: 'Hip Flexor Stretch', checked: false },
+    { name: 'Thoracic Rotation Drill', checked: false },
+    { name: 'Shoulder Internal Rotation', checked: false },
+    { name: 'Shoulder External Rotation', checked: false },
+    { name: 'Lat Stretch', checked: false },
+    { name: 'Pec Stretch', checked: false }
+  ]
+};
+
+function loadWorkoutTemplate() {
+  const type = document.getElementById('workoutType').value;
+  const date = document.getElementById('workoutDate').value;
+  const container = document.getElementById('exerciseLog');
+  
+  // Check if there's existing data for this date
+  const existing = workoutEntries.find(e => e.date === date && e.type === type);
+  
+  if (type === 'Mobility') {
+    const exercises = existing?.exercises || workoutTemplates[type];
+    container.innerHTML = `
+      <h3 style="margin: 20px 0 12px 0;">Mobility Checklist (10 min)</h3>
+      <div style="background: var(--color-bg-tertiary); padding: 16px; border-radius: 8px;">
+        ${exercises.map((ex, idx) => `
+          <div style="display: flex; align-items: center; margin-bottom: 12px;">
+            <input type="checkbox" id="mob_${idx}" ${ex.checked ? 'checked' : ''} 
+                   style="width: 20px; height: 20px; margin-right: 12px; cursor: pointer;">
+            <label for="mob_${idx}" style="cursor: pointer; margin: 0; font-size: 1rem;">${ex.name}</label>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else {
+    const exercises = existing?.exercises || workoutTemplates[type].map(ex => ({
+      ...ex,
+      sets: Array(ex.sets).fill({ weight: '', reps: '' })
+    }));
+    
+    container.innerHTML = `
+      <h3 style="margin: 20px 0 12px 0;">Exercise Tracking</h3>
+      ${exercises.map((ex, exIdx) => `
+        <div class="meal-entry" style="margin-bottom: 16px;">
+          <h4 style="color: var(--color-accent); margin-bottom: 12px;">${ex.name}</h4>
+          <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin-bottom: 12px;">
+            Target: ${ex.sets} sets × ${ex.targetReps} reps
+          </p>
+          ${ex.sets.map((set, setIdx) => `
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 8px; align-items: center;">
+              <div style="color: var(--color-text-secondary); font-weight: 600;">Set ${setIdx + 1}</div>
+              <div class="form-group" style="margin: 0;">
+                <input type="number" id="ex_${exIdx}_set_${setIdx}_weight" 
+                       value="${set.weight}" placeholder="Weight (lbs)" 
+                       style="padding: 8px; font-size: 0.95rem;">
+              </div>
+              <div class="form-group" style="margin: 0;">
+                <input type="number" id="ex_${exIdx}_set_${setIdx}_reps" 
+                       value="${set.reps}" placeholder="Reps" 
+                       style="padding: 8px; font-size: 0.95rem;">
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `).join('')}
+    `;
+  }
+}
+
 // Workout tracking
 function saveWorkout() {
   const date = document.getElementById('workoutDate').value;
   const type = document.getElementById('workoutType').value;
   const notes = document.getElementById('workoutNotes').value;
   
+  let exercises;
+  
+  if (type === 'Mobility') {
+    exercises = workoutTemplates[type].map((ex, idx) => ({
+      name: ex.name,
+      checked: document.getElementById(`mob_${idx}`).checked
+    }));
+    
+    workoutEntries = workoutEntries.filter(e => !(e.date === date && e.type === type));
+    
+    workoutEntries.push({
+      date: date,
+      type: type,
+      exercises: exercises,
+      notes: notes
+    });
+  } else {
+    exercises = workoutTemplates[type].map((ex, exIdx) => ({
+      name: ex.name,
+      sets: ex.sets,
+      targetReps: ex.targetReps,
+      sets: Array(ex.sets).fill(0).map((_, setIdx) => ({
+        weight: document.getElementById(`ex_${exIdx}_set_${setIdx}_weight`).value,
+        reps: document.getElementById(`ex_${exIdx}_set_${setIdx}_reps`).value
+      }))
+    }));
+    
+    workoutEntries = workoutEntries.filter(e => !(e.date === date && e.type === type));
+    
+    workoutEntries.push({
+      date: date,
+      type: type,
+      exercises: exercises,
+      notes: notes
+    });
+  }
+  
+  workoutEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  // Save to localStorage
+  localStorage.setItem('workoutEntries', JSON.stringify(workoutEntries));
+  
+  // Update display
+  loadWorkoutHistory();
+  
+  alert('Workout saved!');
+}
+
+function showWorkoutTracker() {
+  const type = document.getElementById('historyFilter').value;
+  const container = document.getElementById('workoutTrackerContainer');
+  
+  if (!type) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  container.style.display = 'block';
+  const today = new Date().toISOString().split('T')[0];
+  
+  if (type === 'Mobility') {
+    const exercises = workoutTemplates[type];
+    container.innerHTML = `
+      <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px; border: 2px solid var(--color-accent);">
+        <h3 style="margin: 0 0 16px 0; color: var(--color-accent);">Log ${type} Workout</h3>
+        
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="quickWorkoutDate" value="${today}">
+        </div>
+        
+        <h4 style="margin: 16px 0 12px 0;">Mobility Checklist (10 min)</h4>
+        ${exercises.map((ex, idx) => `
+          <div style="display: flex; align-items: center; margin-bottom: 12px;">
+            <input type="checkbox" id="quick_mob_${idx}" 
+                   style="width: 20px; height: 20px; margin-right: 12px; cursor: pointer;">
+            <label for="quick_mob_${idx}" style="cursor: pointer; margin: 0; font-size: 1rem;">${ex.name}</label>
+          </div>
+        `).join('')}
+        
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Notes</label>
+          <textarea id="quickWorkoutNotes" rows="2" placeholder="How you felt, energy level, etc..."></textarea>
+        </div>
+        
+        <button onclick="saveQuickWorkout()" style="width: 100%; margin-top: 12px;">Save Workout</button>
+      </div>
+    `;
+  } else {
+    const exercises = workoutTemplates[type];
+    container.innerHTML = `
+      <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px; border: 2px solid var(--color-accent);">
+        <h3 style="margin: 0 0 16px 0; color: var(--color-accent);">Log ${type} Workout</h3>
+        
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="quickWorkoutDate" value="${today}">
+        </div>
+        
+        ${exercises.map((ex, exIdx) => `
+          <div style="background: var(--color-bg-primary); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+            <h4 style="color: var(--color-accent); margin: 0 0 8px 0;">${ex.name}</h4>
+            <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin-bottom: 12px;">
+              Target: ${ex.sets} sets × ${ex.targetReps} reps
+            </p>
+            ${Array(ex.sets).fill(0).map((_, setIdx) => `
+              <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 12px; margin-bottom: 8px; align-items: center;">
+                <div style="color: var(--color-text-secondary); font-weight: 600; min-width: 60px;">Set ${setIdx + 1}</div>
+                <input type="number" id="quick_ex_${exIdx}_set_${setIdx}_weight" 
+                       placeholder="Weight" 
+                       style="padding: 10px; font-size: 0.95rem; background: var(--color-bg-secondary); border: 1px solid var(--color-bg-tertiary); border-radius: 6px; color: var(--color-text-primary);">
+                <input type="number" id="quick_ex_${exIdx}_set_${setIdx}_reps" 
+                       placeholder="Reps" 
+                       style="padding: 10px; font-size: 0.95rem; background: var(--color-bg-secondary); border: 1px solid var(--color-bg-tertiary); border-radius: 6px; color: var(--color-text-primary);">
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+        
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Overall Notes</label>
+          <textarea id="quickWorkoutNotes" rows="2" placeholder="How you felt, energy level, etc..."></textarea>
+        </div>
+        
+        <button onclick="saveQuickWorkout()" style="width: 100%; margin-top: 12px;">Save Workout</button>
+      </div>
+    `;
+  }
+  
+  // Scroll to the tracker
+  container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function saveQuickWorkout() {
+  const date = document.getElementById('quickWorkoutDate').value;
+  const type = document.getElementById('historyFilter').value;
+  const notes = document.getElementById('quickWorkoutNotes').value;
+  
+  let exercises;
+  
+  if (type === 'Mobility') {
+    exercises = workoutTemplates[type].map((ex, idx) => ({
+      name: ex.name,
+      checked: document.getElementById(`quick_mob_${idx}`).checked
+    }));
+  } else {
+    exercises = workoutTemplates[type].map((ex, exIdx) => ({
+      name: ex.name,
+      sets: ex.sets,
+      targetReps: ex.targetReps,
+      sets: Array(ex.sets).fill(0).map((_, setIdx) => ({
+        weight: document.getElementById(`quick_ex_${exIdx}_set_${setIdx}_weight`).value,
+        reps: document.getElementById(`quick_ex_${exIdx}_set_${setIdx}_reps`).value
+      }))
+    }));
+  }
+  
+  // Remove existing entry for this date/type
+  workoutEntries = workoutEntries.filter(e => !(e.date === date && e.type === type));
+  
+  // Add the new entry
   workoutEntries.push({
     date: date,
     type: type,
+    exercises: exercises,
     notes: notes
   });
   
-  document.getElementById('workoutNotes').value = '';
+  workoutEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  // Save to localStorage
+  localStorage.setItem('workoutEntries', JSON.stringify(workoutEntries));
+  
+  // Update display
+  loadWorkoutHistory();
+  
+  // Hide tracker and reset dropdown
+  document.getElementById('workoutTrackerContainer').style.display = 'none';
+  document.getElementById('historyFilter').value = '';
+  
   alert('Workout saved!');
+}
+
+function loadWorkoutHistory() {
+  const container = document.getElementById('workoutHistoryContainer');
+  const strengthWorkouts = workoutEntries.filter(e => e.type !== 'Cardio');
+  
+  if (strengthWorkouts.length === 0) {
+    container.innerHTML = '<p style="text-align: center; padding: 24px; color: var(--color-text-secondary);">No workouts logged yet</p>';
+    return;
+  }
+  
+  container.innerHTML = strengthWorkouts.slice().reverse().map(entry => {
+    if (entry.type === 'Mobility') {
+      const completed = entry.exercises.filter(e => e.checked).length;
+      const total = entry.exercises.length;
+      return `
+        <div class="card" style="background: var(--color-bg-tertiary); margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div>
+              <h3 style="color: var(--color-accent); margin: 0;">${entry.type}</h3>
+              <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin: 4px 0 0 0;">${entry.date}</p>
+            </div>
+            <div style="text-align: right;">
+              <div style="color: var(--color-success); font-size: 1.5rem; font-weight: bold;">${completed}/${total}</div>
+              <div style="color: var(--color-text-secondary); font-size: 0.85rem;">completed</div>
+            </div>
+          </div>
+          ${entry.exercises.map(ex => `
+            <div style="margin-bottom: 4px; color: var(--color-text-secondary);">
+              ${ex.checked ? '✓' : '○'} ${ex.name}
+            </div>
+          `).join('')}
+          ${entry.notes ? `<p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-bg-secondary); color: var(--color-text-secondary); font-size: 0.9rem;">${entry.notes}</p>` : ''}
+        </div>
+      `;
+    } else {
+      return `
+        <div class="card" style="background: var(--color-bg-tertiary); margin-bottom: 16px;">
+          <div style="margin-bottom: 12px;">
+            <h3 style="color: var(--color-accent); margin: 0 0 4px 0;">${entry.type}</h3>
+            <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin: 0;">${entry.date}</p>
+          </div>
+          ${entry.exercises.map(ex => {
+            const completedSets = ex.sets.filter(s => s.weight && s.reps).length;
+            return `
+              <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <strong style="color: var(--color-text-primary);">${ex.name}</strong>
+                  <span style="color: var(--color-text-secondary); font-size: 0.85rem;">
+                    ${completedSets}/${ex.sets.length} sets
+                  </span>
+                </div>
+                ${ex.sets.map((set, idx) => 
+                  set.weight && set.reps 
+                    ? `<div style="color: var(--color-text-secondary); font-size: 0.9rem; margin-left: 12px;">
+                         Set ${idx + 1}: ${set.weight} lbs × ${set.reps} reps
+                       </div>`
+                    : ''
+                ).join('')}
+              </div>
+            `;
+          }).join('')}
+          ${entry.notes ? `<p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-bg-secondary); color: var(--color-text-secondary); font-size: 0.9rem;">${entry.notes}</p>` : ''}
+        </div>
+      `;
+    }
+  }).join('');
+}
+
+function saveCardioSession() {
+  const date = document.getElementById('cardioDate').value;
+  const notes = document.getElementById('cardioNotes').value;
+  
+  const cardioData = {
+    duration: document.getElementById('cardio_duration_main').value,
+    type: document.getElementById('cardio_type_main').value,
+    heartRate: document.getElementById('cardio_hr_main').value,
+    calories: document.getElementById('cardio_cal_main').value
+  };
+  
+  if (!cardioData.duration || !cardioData.type) {
+    alert('Please enter duration and cardio type');
+    return;
+  }
+  
+  workoutEntries = workoutEntries.filter(e => !(e.date === date && e.type === 'Cardio'));
+  
+  workoutEntries.push({
+    date: date,
+    type: 'Cardio',
+    cardioData: cardioData,
+    notes: notes
+  });
+  
+  workoutEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
+  localStorage.setItem('workoutEntries', JSON.stringify(workoutEntries));
+  
+  loadCardioHistory();
+  
+  // Clear form
+  document.getElementById('cardio_duration_main').value = '';
+  document.getElementById('cardio_type_main').value = '';
+  document.getElementById('cardio_hr_main').value = '';
+  document.getElementById('cardio_cal_main').value = '';
+  document.getElementById('cardioNotes').value = '';
+  
+  alert('Cardio session saved!');
+}
+
+function loadCardioHistory() {
+  const container = document.getElementById('cardioHistoryContainer');
+  const cardioSessions = workoutEntries.filter(e => e.type === 'Cardio');
+  
+  if (cardioSessions.length === 0) {
+    container.innerHTML = '<p style="text-align: center; padding: 24px; color: var(--color-text-secondary);">No cardio sessions logged yet</p>';
+    return;
+  }
+  
+  container.innerHTML = cardioSessions.slice().reverse().map(entry => {
+    const cardio = entry.cardioData;
+    return `
+      <div class="card" style="background: var(--color-bg-tertiary); margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h3 style="color: var(--color-accent); margin: 0;">Cardio Session</h3>
+            <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin: 4px 0 0 0;">${entry.date}</p>
+          </div>
+          <div style="text-align: right;">
+            <div style="color: var(--color-success); font-size: 1.5rem; font-weight: bold;">${cardio.duration}min</div>
+            <div style="color: var(--color-text-secondary); font-size: 0.85rem;">${cardio.type || 'Cardio'}</div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px;">
+          ${cardio.heartRate ? `<div style="color: var(--color-text-secondary);"><strong>Avg HR:</strong> ${cardio.heartRate} bpm</div>` : ''}
+          ${cardio.calories ? `<div style="color: var(--color-text-secondary);"><strong>Calories:</strong> ${cardio.calories}</div>` : ''}
+        </div>
+        ${entry.notes ? `<p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-bg-secondary); color: var(--color-text-secondary); font-size: 0.9rem;">${entry.notes}</p>` : ''}
+      </div>
+    `;
+  }).join('');
 }
 </script>
 

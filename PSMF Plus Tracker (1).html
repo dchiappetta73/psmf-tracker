@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSMF Plus Tracker with Refeeds</title>
+<style>
+:root {
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-tertiary: #334155;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-accent: #38bdf8;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-refeed: #f97316;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  padding: 20px;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+h1 {
+  color: var(--color-accent);
+  margin-bottom: 10px;
+  font-size: 2rem;
+}
+
+.subtitle {
+  color: var(--color-text-secondary);
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--color-bg-tertiary);
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 1rem;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--color-accent);
+  background: var(--color-bg-secondary);
+}
+
+.tab.active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.card {
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid var(--color-bg-tertiary);
+}
+
+.card h2 {
+  color: var(--color-accent);
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+}
+
+.card h3 {
+  color: var(--color-text-primary);
+  margin: 16px 0 12px 0;
+  font-size: 1.2rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  background: var(--color-bg-tertiary);
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stat-label {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  color: var(--color-accent);
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.stat-sub {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 6px;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+button {
+  padding: 12px 24px;
+  background: var(--color-accent);
+  color: var(--color-bg-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+button:hover {
+  background: #0ea5e9;
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--color-bg-tertiary);
+  opacity: 0.8;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-bg-tertiary);
+}
+
+th {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+td {
+  color: var(--color-text-secondary);
+}
+
+.refeed-day {
+  background: rgba(249, 115, 22, 0.1);
+  border-left: 4px solid var(--color-refeed);
+}
+
+.refeed-badge {
+  display: inline-block;
+  background: var(--color-refeed);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.psmf-badge {
+  display: inline-block;
+  background: var(--color-accent);
+  color: var(--color-bg-primary);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.meal-entry {
+  background: var(--color-bg-tertiary);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.meal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.macro-summary {
+  display: flex;
+  justify-content: space-around;
+  padding: 16px;
+  background: var(--color-bg-tertiary);
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.macro-item {
+  text-align: center;
+}
+
+.macro-label {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.macro-value {
+  color: var(--color-accent);
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 24px;
+  background: var(--color-bg-tertiary);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-success));
+  transition: width 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.day-box {
+  background: var(--color-bg-tertiary);
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.day-box:hover {
+  border-color: var(--color-accent);
+}
+
+.day-box.refeed {
+  background: rgba(249, 115, 22, 0.2);
+  border-color: var(--color-refeed);
+}
+
+.day-box.today {
+  border-color: var(--color-success);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.day-number {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.day-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.alert {
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.alert-info {
+  background: rgba(56, 189, 248, 0.1);
+  border-left: 4px solid var(--color-accent);
+  color: var(--color-text-primary);
+}
+
+.alert-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 4px solid var(--color-warning);
+  color: var(--color-text-primary);
+}
+
+.workout-log {
+  margin-top: 12px;
+}
+
+.exercise-entry {
+  background: var(--color-bg-tertiary);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+ul {
+  margin-left: 20px;
+  color: var(--color-text-secondary);
+}
+
+li {
+  margin-bottom: 8px;
+}
+
+.highlight {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🔥 PSMF Plus Tracker</h1>
+  <p class="subtitle">Optimized Protocol with RFLH Refeed Integration | March 5 - March 31, 2026</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('overview')">📊 Overview</button>
+    <button class="tab" onclick="showTab('calendar')">📅 Calendar & Refeeds</button>
+    <button class="tab" onclick="showTab('diet')">🍽️ Diet Tracker</button>
+    <button class="tab" onclick="showTab('weight')">⚖️ Weight Log</button>
+    <button class="tab" onclick="showTab('workouts')">💪 Workouts</button>
+    <button class="tab" onclick="showTab('supplements')">💊 Supplements</button>
+    <button class="tab" onclick="showTab('protocol')">📋 Protocol</button>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div id="overview" class="tab-content active">
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label">Current Day</div>
+        <div class="stat-value" id="currentDay">4</div>
+        <div class="stat-sub">of 27 days</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Current Weight</div>
+        <div class="stat-value" id="currentWeight">173.0</div>
+        <div class="stat-sub">lbs</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Goal Weight</div>
+        <div class="stat-value">160-165</div>
+        <div class="stat-sub">lbs</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Days Remaining</div>
+        <div class="stat-value" id="daysRemaining">23</div>
+        <div class="stat-sub">until 3/31/26</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Progress Tracker</h2>
+      <div class="stat-label">Weight Loss Progress</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressBar" style="width: 0%">0%</div>
+      </div>
+      <p style="color: var(--color-text-secondary); margin-top: 12px; text-align: center;">
+        Target: 8-13 lbs loss | Expected: 162-164 lbs by 3/31
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Today's Status</h2>
+      <div id="todayStatus"></div>
+    </div>
+
+    <div class="card">
+      <h2>RFLH Category 2 Protocol Summary</h2>
+      <ul>
+        <li><span class="highlight">Body Fat:</span> 22-25% (Category 2)</li>
+        <li><span class="highlight">Timeline:</span> 27 days (March 5 - March 31, 2026)</li>
+        <li><span class="highlight">Refeed Schedule:</span> Free meal weekly, 5-hour refeed every 1-2 weeks</li>
+        <li><span class="highlight">Expected Results:</span> 11-14 lbs weight loss, 5-7 lbs fat loss, minimal LBM loss</li>
+        <li><span class="highlight">Training:</span> 3x/week heavy compound lifts + daily 10-min mobility</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CALENDAR TAB -->
+  <div id="calendar" class="tab-content">
+    <div class="card">
+      <h2>27-Day PSMF + Refeed Calendar</h2>
+      <div class="alert alert-info">
+        <strong>📅 Refeed Days Scheduled:</strong><br>
+        • Day 7 (Mar 11): Free Meal<br>
+        • Day 14 (Mar 18): 5-Hour Refeed<br>
+        • Day 21 (Mar 25): Free Meal<br>
+        • Day 26 (Mar 30): 5-Hour Refeed
+      </div>
+      
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Refeed Protocol Details</h2>
+      
+      <h3>🍕 Free Meal (Days 7 & 21)</h3>
+      <ul>
+        <li><span class="highlight">Duration:</span> Single meal</li>
+        <li><span class="highlight">Macros:</span> Whatever you want within reason (~1000-1500 cal)</li>
+        <li><span class="highlight">Purpose:</span> Psychological break, prevent bingeing</li>
+        <li><span class="highlight">Timing:</span> Ideally post-workout or evening</li>
+      </ul>
+
+      <h3>🍝 5-Hour Refeed (Days 14 & 26)</h3>
+      <ul>
+        <li><span class="highlight">Duration:</span> 5 hours eating window</li>
+        <li><span class="highlight">Carbs:</span> 300-400g (high carb foods: bread, bagels, pasta, rice, cereal)</li>
+        <li><span class="highlight">Protein:</span> 130-150g (1g per lb ideal body weight)</li>
+        <li><span class="highlight">Fat:</span> <50g (keep fat very low)</li>
+        <li><span class="highlight">Total Calories:</span> ~2000-2500</li>
+        <li><span class="highlight">Purpose:</span> Leptin boost, glycogen replenishment, metabolic maintenance</li>
+        <li><span class="highlight">Foods:</span> Bagels with jam, pasta with marinara, white rice, low-fat cereals, bananas, pretzels</li>
+      </ul>
+
+      <h3>📊 PSMF Days (All Other Days)</h3>
+      <ul>
+        <li><span class="highlight">Protein:</span> 170g (1g per lb LBM)</li>
+        <li><span class="highlight">Carbs:</span> <30g (green vegetables only)</li>
+        <li><span class="highlight">Fat:</span> 30-40g (from fish oil, meat)</li>
+        <li><span class="highlight">Calories:</span> ~900-1000</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- DIET TRACKER TAB -->
+  <div id="diet" class="tab-content">
+    <div class="card">
+      <h2>Daily Diet Log</h2>
+      
+      <div class="form-group">
+        <label>Select Day</label>
+        <input type="date" id="dietDate" value="2026-03-08">
+      </div>
+
+      <div id="dayTypeIndicator"></div>
+
+      <div class="meal-entry">
+        <h3>Meal 1</h3>
+        <div class="meal-grid">
+          <div class="form-group">
+            <label>Protein (g)</label>
+            <input type="number" id="m1_protein" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Carbs (g)</label>
+            <input type="number" id="m1_carbs" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Fat (g)</label>
+            <input type="number" id="m1_fat" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Calories</label>
+            <input type="number" id="m1_cal" value="0" onchange="calculateDailyMacros()">
+          </div>
+        </div>
+      </div>
+
+      <div class="meal-entry">
+        <h3>Meal 2</h3>
+        <div class="meal-grid">
+          <div class="form-group">
+            <label>Protein (g)</label>
+            <input type="number" id="m2_protein" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Carbs (g)</label>
+            <input type="number" id="m2_carbs" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Fat (g)</label>
+            <input type="number" id="m2_fat" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Calories</label>
+            <input type="number" id="m2_cal" value="0" onchange="calculateDailyMacros()">
+          </div>
+        </div>
+      </div>
+
+      <div class="meal-entry">
+        <h3>Meal 3</h3>
+        <div class="meal-grid">
+          <div class="form-group">
+            <label>Protein (g)</label>
+            <input type="number" id="m3_protein" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Carbs (g)</label>
+            <input type="number" id="m3_carbs" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Fat (g)</label>
+            <input type="number" id="m3_fat" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Calories</label>
+            <input type="number" id="m3_cal" value="0" onchange="calculateDailyMacros()">
+          </div>
+        </div>
+      </div>
+
+      <div class="meal-entry">
+        <h3>Meal 4 (Optional)</h3>
+        <div class="meal-grid">
+          <div class="form-group">
+            <label>Protein (g)</label>
+            <input type="number" id="m4_protein" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Carbs (g)</label>
+            <input type="number" id="m4_carbs" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Fat (g)</label>
+            <input type="number" id="m4_fat" value="0" onchange="calculateDailyMacros()">
+          </div>
+          <div class="form-group">
+            <label>Calories</label>
+            <input type="number" id="m4_cal" value="0" onchange="calculateDailyMacros()">
+          </div>
+        </div>
+      </div>
+
+      <div class="macro-summary">
+        <div class="macro-item">
+          <div class="macro-label">Total Protein</div>
+          <div class="macro-value" id="totalProtein">0</div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-label">Total Carbs</div>
+          <div class="macro-value" id="totalCarbs">0</div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-label">Total Fat</div>
+          <div class="macro-value" id="totalFat">0</div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-label">Total Calories</div>
+          <div class="macro-value" id="totalCal">0</div>
+        </div>
+      </div>
+
+      <button onclick="saveDietEntry()" style="width: 100%; margin-top: 16px;">Save Diet Entry</button>
+    </div>
+
+    <div class="card">
+      <h2>Diet History</h2>
+      <table id="dietHistory">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Day Type</th>
+            <th>Protein</th>
+            <th>Carbs</th>
+            <th>Fat</th>
+            <th>Calories</th>
+          </tr>
+        </thead>
+        <tbody id="dietHistoryBody">
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 24px;">No entries yet</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- WEIGHT LOG TAB -->
+  <div id="weight" class="tab-content">
+    <div class="card">
+      <h2>Daily Weight Entry</h2>
+      
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="weightDate" value="2026-03-08">
+      </div>
+
+      <div class="form-group">
+        <label>Morning Weight (lbs)</label>
+        <input type="number" step="0.1" id="weightValue" placeholder="173.0">
+      </div>
+
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <textarea id="weightNotes" rows="2" placeholder="e.g., felt bloated, slept poorly, refeed day..."></textarea>
+      </div>
+
+      <button onclick="saveWeight()" style="width: 100%;">Save Weight Entry</button>
+    </div>
+
+    <div class="card">
+      <h2>Weight History</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Weight</th>
+            <th>Change</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="weightHistoryBody">
+          <tr>
+            <td>3/5/2026</td>
+            <td>Day 1</td>
+            <td>174.0 lbs</td>
+            <td>—</td>
+            <td>Starting weight</td>
+          </tr>
+          <tr>
+            <td>3/8/2026</td>
+            <td>Day 4</td>
+            <td>172.8 lbs</td>
+            <td style="color: var(--color-success);">-1.2 lbs</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- WORKOUTS TAB -->
+  <div id="workouts" class="tab-content">
+    <div class="card">
+      <h2>Training Schedule (3x/Week)</h2>
+      <div class="alert alert-warning">
+        <strong>⚡ Optimized for Muscle Preservation on PSMF</strong><br>
+        Heavy compound lifts (5-8 reps), minimal volume, maximum intensity. Goal: maintain strength = maintain muscle.
+      </div>
+
+      <h3>Day A: Lower Body Focus (Mon/Thu)</h3>
+      <ul>
+        <li><span class="highlight">Squat or Leg Press:</span> 3 sets x 5-8 reps (heavy)</li>
+        <li><span class="highlight">Romanian Deadlift:</span> 3 sets x 6-8 reps</li>
+        <li><span class="highlight">Leg Curl:</span> 2 sets x 8-10 reps</li>
+        <li><span class="highlight">Calf Raise:</span> 3 sets x 12-15 reps</li>
+      </ul>
+
+      <h3>Day B: Upper Body Focus (Tue/Fri)</h3>
+      <ul>
+        <li><span class="highlight">Bench Press or DB Press:</span> 3 sets x 5-8 reps (heavy)</li>
+        <li><span class="highlight">Bent-Over Row or Cable Row:</span> 3 sets x 6-8 reps</li>
+        <li><span class="highlight">Overhead Press:</span> 3 sets x 6-8 reps</li>
+        <li><span class="highlight">Pull-ups or Lat Pulldown:</span> 2 sets x 6-10 reps</li>
+      </ul>
+
+      <h3>Day C: Full Body (Wed/Sat)</h3>
+      <ul>
+        <li><span class="highlight">Deadlift:</span> 3 sets x 5 reps (heavy)</li>
+        <li><span class="highlight">Incline Press:</span> 3 sets x 6-8 reps</li>
+        <li><span class="highlight">Bulgarian Split Squat:</span> 3 sets x 8-10 reps per leg</li>
+        <li><span class="highlight">Face Pulls:</span> 2 sets x 12-15 reps</li>
+      </ul>
+
+      <p style="color: var(--color-text-secondary); margin-top: 16px;">
+        <strong>Daily:</strong> 10-minute mobility routine for hip/thoracic/shoulder tightness
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Workout Log</h2>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="workoutDate" value="2026-03-08">
+      </div>
+
+      <div class="form-group">
+        <label>Workout Type</label>
+        <select id="workoutType">
+          <option value="Day A">Day A - Lower Body</option>
+          <option value="Day B">Day B - Upper Body</option>
+          <option value="Day C">Day C - Full Body</option>
+          <option value="Mobility">Mobility Only</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="workoutNotes" rows="3" placeholder="Exercises completed, weights used, how you felt..."></textarea>
+      </div>
+
+      <button onclick="saveWorkout()" style="width: 100%;">Save Workout</button>
+    </div>
+  </div>
+
+  <!-- SUPPLEMENTS TAB -->
+  <div id="supplements" class="tab-content">
+    <div class="card">
+      <h2>Daily Supplement Protocol</h2>
+      
+      <h3>Morning (Upon Waking)</h3>
+      <ul>
+        <li><span class="highlight">Fish Oil:</span> 3 Nordic Naturals capsules (6750mg EPA/5250mg DHA total for 6 caps/day)</li>
+        <li><span class="highlight">Multivitamin:</span> 1 Thorne Basic Nutrients</li>
+        <li><span class="highlight">Trace Minerals:</span> 1 Seeking Health capsule</li>
+        <li><span class="highlight">Vitamin D3+K:</span> 1 Metagenics D3 10000 (every other day)</li>
+        <li><span class="highlight">Caffeine:</span> 200mg (coffee or pill)</li>
+        <li><span class="highlight">BodyArmor Zero:</span> 20 oz with fiber</li>
+      </ul>
+
+      <h3>Pre-Workout (30 min before training)</h3>
+      <ul>
+        <li><span class="highlight">Leucine:</span> 5g</li>
+        <li><span class="highlight">Caffeine:</span> 100-200mg (if training PM)</li>
+        <li><span class="highlight">Creatine:</span> 5g</li>
+      </ul>
+
+      <h3>Post-Workout</h3>
+      <ul>
+        <li><span class="highlight">Leucine:</span> 5g</li>
+        <li><span class="highlight">Protein Shake:</span> 40-50g protein</li>
+      </ul>
+
+      <h3>Mid-Afternoon (3PM)</h3>
+      <ul>
+        <li><span class="highlight">Psyllium Fiber:</span> 5-10g (Metamucil 1.5 scoops in water)</li>
+        <li><span class="highlight">Fish Oil:</span> 3 more Nordic Naturals capsules</li>
+      </ul>
+
+      <h3>Evening (With Dinner)</h3>
+      <ul>
+        <li><span class="highlight">Magnesium Glycinate:</span> 400mg</li>
+        <li><span class="highlight">Apple Cider Vinegar:</span> 1-2 tbsp (with meal for glucose control)</li>
+      </ul>
+
+      <h3>Before Bed</h3>
+      <ul>
+        <li><span class="highlight">Casein Protein:</span> 30-40g (optional but recommended)</li>
+      </ul>
+
+      <div class="alert alert-info" style="margin-top: 20px;">
+        <strong>💡 Why These Supplements:</strong><br>
+        • Fish Oil (10g/day): Anti-catabolic, supports LBM preservation<br>
+        • Leucine (10g/day): Maximal mTOR activation for muscle protein synthesis<br>
+        • Electrolytes: 3-5g sodium, 1g potassium, 900mg calcium daily (prevent crashes)<br>
+        • Fiber: Satiety, glucose control, gut health<br>
+        • Casein: Slow-release protein overnight (anti-catabolic during 8hr fast)
+      </div>
+    </div>
+  </div>
+
+  <!-- PROTOCOL TAB -->
+  <div id="protocol" class="tab-content">
+    <div class="card">
+      <h2>Your Personalized PSMF Plus Protocol</h2>
+      
+      <h3>📊 Stats & Goals</h3>
+      <ul>
+        <li>Height: 5'9"</li>
+        <li>Starting Weight: 173 lbs (Day 4)</li>
+        <li>Body Fat: 22-25% (Category 2)</li>
+        <li>Goal Weight: 160-165 lbs</li>
+        <li>Timeline: 27 days (March 5 - March 31, 2026)</li>
+        <li>Expected Loss: 11-14 lbs total, 5-7 lbs fat</li>
+      </ul>
+
+      <h3>🍽️ Daily Macros (PSMF Days)</h3>
+      <ul>
+        <li><span class="highlight">Protein:</span> 170g (1g per lb lean body mass)</li>
+        <li><span class="highlight">Carbs:</span> <30g (green vegetables only)</li>
+        <li><span class="highlight">Fat:</span> 30-40g (from fish oil, incidental meat fat)</li>
+        <li><span class="highlight">Total Calories:</span> ~900-1000</li>
+      </ul>
+
+      <h3>🔄 Refeed Days</h3>
+      <ul>
+        <li><span class="highlight">Schedule:</span> Days 7, 14, 21, 26</li>
+        <li><span class="highlight">Types:</span> Free meal (Days 7, 21) | 5-hr refeed (Days 14, 26)</li>
+        <li><span class="highlight">Purpose:</span> Leptin boost, metabolic maintenance, psychological break</li>
+      </ul>
+
+      <h3>💪 Training Protocol</h3>
+      <ul>
+        <li><span class="highlight">Frequency:</span> 3x per week (Day A, Day B, Day C rotation)</li>
+        <li><span class="highlight">Style:</span> Heavy compound lifts, 5-8 reps, minimal volume</li>
+        <li><span class="highlight">Goal:</span> Maintain strength = maintain muscle</li>
+        <li><span class="highlight">Daily Mobility:</span> 10 minutes for hip/thoracic/shoulder tightness</li>
+      </ul>
+
+      <h3>⚡ Key Success Factors</h3>
+      <ul>
+        <li>Protein at every meal (40-50g per meal)</li>
+        <li>10g leucine daily (5g pre/post workout)</li>
+        <li>10g fish oil daily (6 capsules split AM/PM)</li>
+        <li>3-5g sodium, 1g potassium daily (electrolytes critical)</li>
+        <li>5-10g fiber daily (Metamucil at 3PM)</li>
+        <li>8+ hours sleep (GH/testosterone optimization)</li>
+        <li>Mobility work daily (injury prevention)</li>
+      </ul>
+
+      <h3>🎯 Expected Results (3/31/26)</h3>
+      <ul>
+        <li>Weight: 162-164 lbs</li>
+        <li>Fat Loss: 5-7 lbs true fat</li>
+        <li>LBM Change: Minimal loss or slight gain (+0.5 lb possible)</li>
+        <li>Strength: Maintained or slight decrease expected</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Data storage
+let dietEntries = [];
+let weightEntries = [
+  {date: '2026-03-05', day: 1, weight: 174.0, change: 0, notes: 'Starting weight'},
+  {date: '2026-03-08', day: 4, weight: 172.8, change: -1.2, notes: ''}
+];
+let workoutEntries = [];
+
+// Refeed days (1-indexed day numbers)
+const refeedDays = {
+  7: 'Free Meal',
+  14: '5-Hour Refeed',
+  21: 'Free Meal',
+  26: '5-Hour Refeed'
+};
+
+// Initialize
+window.onload = function() {
+  updateOverview();
+  generateCalendar();
+  updateDayTypeIndicator();
+  loadDietHistory();
+  calculateDailyMacros();
+};
+
+// Tab navigation
+function showTab(tabName) {
+  const tabs = document.querySelectorAll('.tab');
+  const contents = document.querySelectorAll('.tab-content');
+  
+  tabs.forEach(tab => tab.classList.remove('active'));
+  contents.forEach(content => content.classList.remove('active'));
+  
+  event.target.classList.add('active');
+  document.getElementById(tabName).classList.add('active');
+}
+
+// Update overview stats
+function updateOverview() {
+  const startDate = new Date('2026-03-05');
+  const today = new Date('2026-03-08');
+  const endDate = new Date('2026-03-31');
+  
+  const daysPassed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
+  const daysRemaining = Math.floor((endDate - today) / (1000 * 60 * 60 * 24));
+  
+  document.getElementById('currentDay').textContent = daysPassed;
+  document.getElementById('daysRemaining').textContent = daysRemaining;
+  
+  // Calculate progress
+  const startWeight = 174;
+  const currentWeight = 172.8;
+  const goalWeight = 162.5; // midpoint of 160-165
+  const totalLoss = startWeight - goalWeight;
+  const currentLoss = startWeight - currentWeight;
+  const progress = (currentLoss / totalLoss * 100).toFixed(1);
+  
+  const progressBar = document.getElementById('progressBar');
+  progressBar.style.width = progress + '%';
+  progressBar.textContent = progress + '%';
+  
+  // Today's status
+  const todayStatus = document.getElementById('todayStatus');
+  const isRefeedDay = refeedDays[daysPassed];
+  
+  if (isRefeedDay) {
+    todayStatus.innerHTML = `
+      <div class="alert alert-warning">
+        <strong>🎉 TODAY IS A REFEED DAY!</strong><br>
+        Type: ${isRefeedDay}<br><br>
+        ${isRefeedDay === 'Free Meal' 
+          ? 'Enjoy one free meal today (~1000-1500 cal). Stay reasonable but have fun!'
+          : 'Follow 5-hour refeed protocol: 300-400g carbs, 130-150g protein, <50g fat over 5 hours.'
+        }
+      </div>
+    `;
+  } else {
+    const nextRefeed = Object.keys(refeedDays).find(day => day > daysPassed);
+    todayStatus.innerHTML = `
+      <div class="alert alert-info">
+        <strong>📋 Regular PSMF Day</strong><br>
+        Macros: 170g protein | <30g carbs | 30-40g fat | ~900-1000 cal<br><br>
+        Next refeed: Day ${nextRefeed} (${refeedDays[nextRefeed]}) - ${nextRefeed - daysPassed} days away
+      </div>
+    `;
+  }
+}
+
+// Generate calendar
+function generateCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+  
+  const startDate = new Date('2026-03-05');
+  const currentDay = 4; // March 8 is day 4
+  
+  for (let i = 1; i <= 27; i++) {
+    const dayBox = document.createElement('div');
+    dayBox.className = 'day-box';
+    
+    if (refeedDays[i]) {
+      dayBox.classList.add('refeed');
+    }
+    
+    if (i === currentDay) {
+      dayBox.classList.add('today');
+    }
+    
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + i - 1);
+    const dateStr = (date.getMonth() + 1) + '/' + date.getDate();
+    
+    dayBox.innerHTML = `
+      <div class="day-number">Day ${i}</div>
+      <div class="day-label">${dateStr}</div>
+      ${refeedDays[i] ? `<div class="day-label" style="color: var(--color-refeed); font-weight: 600; margin-top: 4px;">${refeedDays[i]}</div>` : ''}
+    `;
+    
+    grid.appendChild(dayBox);
+  }
+}
+
+// Diet tracking
+function updateDayTypeIndicator() {
+  const selectedDate = document.getElementById('dietDate').value;
+  const startDate = new Date('2026-03-05');
+  const selected = new Date(selectedDate);
+  const dayNum = Math.floor((selected - startDate) / (1000 * 60 * 60 * 24)) + 1;
+  
+  const indicator = document.getElementById('dayTypeIndicator');
+  
+  if (refeedDays[dayNum]) {
+    indicator.innerHTML = `
+      <div class="alert alert-warning" style="margin-bottom: 16px;">
+        <strong>📅 Day ${dayNum}: ${refeedDays[dayNum]}</strong><br>
+        ${refeedDays[dayNum] === 'Free Meal' 
+          ? 'Target: ~1000-1500 cal, whatever macros you want'
+          : 'Target: 300-400g carbs | 130-150g protein | <50g fat | ~2000-2500 cal'
+        }
+      </div>
+    `;
+  } else {
+    indicator.innerHTML = `
+      <div class="alert alert-info" style="margin-bottom: 16px;">
+        <strong>📅 Day ${dayNum}: PSMF Day</strong><br>
+        Target: 170g protein | <30g carbs | 30-40g fat | ~900-1000 cal
+      </div>
+    `;
+  }
+}
+
+function calculateDailyMacros() {
+  let totalP = 0, totalC = 0, totalF = 0, totalCal = 0;
+  
+  for (let i = 1; i <= 4; i++) {
+    totalP += parseFloat(document.getElementById(`m${i}_protein`).value) || 0;
+    totalC += parseFloat(document.getElementById(`m${i}_carbs`).value) || 0;
+    totalF += parseFloat(document.getElementById(`m${i}_fat`).value) || 0;
+    totalCal += parseFloat(document.getElementById(`m${i}_cal`).value) || 0;
+  }
+  
+  document.getElementById('totalProtein').textContent = totalP.toFixed(0) + 'g';
+  document.getElementById('totalCarbs').textContent = totalC.toFixed(0) + 'g';
+  document.getElementById('totalFat').textContent = totalF.toFixed(0) + 'g';
+  document.getElementById('totalCal').textContent = totalCal.toFixed(0);
+}
+
+function saveDietEntry() {
+  const date = document.getElementById('dietDate').value;
+  const startDate = new Date('2026-03-05');
+  const selected = new Date(date);
+  const dayNum = Math.floor((selected - startDate) / (1000 * 60 * 60 * 24)) + 1;
+  
+  const entry = {
+    date: date,
+    dayNum: dayNum,
+    dayType: refeedDays[dayNum] || 'PSMF',
+    protein: parseFloat(document.getElementById('totalProtein').textContent),
+    carbs: parseFloat(document.getElementById('totalCarbs').textContent),
+    fat: parseFloat(document.getElementById('totalFat').textContent),
+    calories: parseFloat(document.getElementById('totalCal').textContent)
+  };
+  
+  // Remove existing entry for this date
+  dietEntries = dietEntries.filter(e => e.date !== date);
+  dietEntries.push(entry);
+  dietEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  loadDietHistory();
+  alert('Diet entry saved!');
+}
+
+function loadDietHistory() {
+  const tbody = document.getElementById('dietHistoryBody');
+  
+  if (dietEntries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px;">No entries yet</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = dietEntries.map(entry => `
+    <tr ${entry.dayType !== 'PSMF' ? 'class="refeed-day"' : ''}>
+      <td>${entry.date}</td>
+      <td>
+        ${entry.dayType === 'PSMF' 
+          ? '<span class="psmf-badge">PSMF</span>' 
+          : `<span class="refeed-badge">${entry.dayType}</span>`
+        }
+      </td>
+      <td>${entry.protein.toFixed(0)}g</td>
+      <td>${entry.carbs.toFixed(0)}g</td>
+      <td>${entry.fat.toFixed(0)}g</td>
+      <td>${entry.calories.toFixed(0)}</td>
+    </tr>
+  `).join('');
+}
+
+// Weight tracking
+function saveWeight() {
+  const date = document.getElementById('weightDate').value;
+  const weight = parseFloat(document.getElementById('weightValue').value);
+  const notes = document.getElementById('weightNotes').value;
+  
+  if (!weight) {
+    alert('Please enter a weight value');
+    return;
+  }
+  
+  const startDate = new Date('2026-03-05');
+  const selected = new Date(date);
+  const dayNum = Math.floor((selected - startDate) / (1000 * 60 * 60 * 24)) + 1;
+  
+  // Calculate change
+  const lastEntry = weightEntries[weightEntries.length - 1];
+  const change = lastEntry ? weight - lastEntry.weight : 0;
+  
+  const entry = {
+    date: date,
+    day: dayNum,
+    weight: weight,
+    change: change,
+    notes: notes
+  };
+  
+  weightEntries.push(entry);
+  weightEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  // Update display
+  const tbody = document.getElementById('weightHistoryBody');
+  tbody.innerHTML = weightEntries.map(entry => `
+    <tr>
+      <td>${entry.date}</td>
+      <td>Day ${entry.day}</td>
+      <td>${entry.weight.toFixed(1)} lbs</td>
+      <td style="color: ${entry.change < 0 ? 'var(--color-success)' : entry.change > 0 ? 'var(--color-warning)' : 'var(--color-text-secondary)'}">
+        ${entry.change === 0 ? '—' : (entry.change > 0 ? '+' : '') + entry.change.toFixed(1) + ' lbs'}
+      </td>
+      <td>${entry.notes || '—'}</td>
+    </tr>
+  `).join('');
+  
+  // Update current weight in overview
+  document.getElementById('currentWeight').textContent = weight.toFixed(1);
+  
+  // Clear form
+  document.getElementById('weightValue').value = '';
+  document.getElementById('weightNotes').value = '';
+  
+  alert('Weight entry saved!');
+  updateOverview();
+}
+
+// Workout tracking
+function saveWorkout() {
+  const date = document.getElementById('workoutDate').value;
+  const type = document.getElementById('workoutType').value;
+  const notes = document.getElementById('workoutNotes').value;
+  
+  workoutEntries.push({
+    date: date,
+    type: type,
+    notes: notes
+  });
+  
+  document.getElementById('workoutNotes').value = '';
+  alert('Workout saved!');
+}
+</script>
+
+</body>
+</html>
